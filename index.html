@@ -2,44 +2,303 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Key Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Admin Console</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #1a1a3c, #2d2d6d);
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        @keyframes movePlanets {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            animation: movePlanets linear infinite;
+        }
+
+        .planet1 {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, #7aa7ff, #1a1a3c);
+            top: 10%;
+            left: 10%;
+            animation-duration: 20s;
+        }
+
+        .planet2 {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, #ff7a7a, #3c1a1a);
+            bottom: 10%;
+            right: 10%;
+            animation-duration: 25s;
+        }
+
+        .container {
+            position: relative;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(45deg, #fff, #7aa7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #7aa7ff;
+            box-shadow: 0 0 20px rgba(122, 167, 255, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #7aa7ff, #5f86ff);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .key-display {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error {
+            color: #ff4444;
+            margin-top: 10px;
+            display: none;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #fff;
+            text-decoration: none;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .back-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, transparent, #7aa7ff, transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* Stars animation */
+        .stars {
+            position: fixed;
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
+            animation: animStar 50s linear infinite;
+        }
+        .stars::after {
+            content: " ";
+            position: absolute;
+            top: 2000px;
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
+        }
+
+        @keyframes animStar {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+    </style>
     <script>
-        function generateNewKey() {
-            var newKey = Math.random().toString(36).substring(2, 12);
-            var timestamp = new Date().getTime();
-            localStorage.setItem('accessKey', JSON.stringify({ key: newKey, timestamp: timestamp }));
-            return newKey;
-        }
+        let loginAttempts = 0;
+        let lastAttemptTime = 0;
+        const MAX_ATTEMPTS = 3;
+        const LOCKOUT_DURATION = 30000; // 30 seconds
 
-        function checkAndGenerateKey() {
-            var storedData = JSON.parse(localStorage.getItem('accessKey'));
-            if (!storedData || (new Date().getTime() - storedData.timestamp) > 86400000) {
-                return generateNewKey();
+        function adminLogin() {
+            const now = Date.now();
+            const errorElement = document.getElementById('error-message');
+            const submitButton = document.getElementById('submit-button');
+            const keyDisplay = document.getElementById('key-display');
+            
+            if (loginAttempts >= MAX_ATTEMPTS && (now - lastAttemptTime) < LOCKOUT_DURATION) {
+                const remainingTime = Math.ceil((LOCKOUT_DURATION - (now - lastAttemptTime)) / 1000);
+                errorElement.textContent = `Access locked. Retry in ${remainingTime} seconds`;
+                errorElement.style.display = 'block';
+                submitButton.disabled = true;
+                return;
             }
-            return storedData.key;
-        }
 
-        function checkKey() {
-            var key = document.getElementById('accessKey').value;
-            var correctKey = checkAndGenerateKey();
+            if ((now - lastAttemptTime) >= LOCKOUT_DURATION) {
+                loginAttempts = 0;
+                submitButton.disabled = false;
+                errorElement.style.display = 'none';
+            }
 
-            if (key === correctKey) {
-                window.open('https://ctv2-pearl.vercel.app/', 'about:blank');
+            const adminPassword = document.getElementById('adminPassword').value;
+            const correctPassword = 'cavanstoolsontop';
+            
+            if (adminPassword === correctPassword) {
+                try {
+                    const storedData = JSON.parse(localStorage.getItem('accessKey'));
+                    if (storedData && storedData.key) {
+                        keyDisplay.textContent = `Current Access Key: ${storedData.key}`;
+                        keyDisplay.style.display = 'block';
+                        errorElement.style.display = 'none';
+                    } else {
+                        errorElement.textContent = 'No active key found. Generate a new one from the main page.';
+                        errorElement.style.display = 'block';
+                        keyDisplay.style.display = 'none';
+                    }
+                } catch (e) {
+                    errorElement.textContent = 'Error accessing key data. Please try again.';
+                    errorElement.style.display = 'block';
+                    keyDisplay.style.display = 'none';
+                }
             } else {
-                alert('Incorrect key. Please try again.');
+                loginAttempts++;
+                lastAttemptTime = now;
+                
+                if (loginAttempts >= MAX_ATTEMPTS) {
+                    submitButton.disabled = true;
+                    setTimeout(() => {
+                        submitButton.disabled = false;
+                        loginAttempts = 0;
+                        errorElement.style.display = 'none';
+                    }, LOCKOUT_DURATION);
+                }
+
+                errorElement.textContent = `Invalid password. ${MAX_ATTEMPTS - loginAttempts} attempts remaining`;
+                errorElement.style.display = 'block';
+                keyDisplay.style.display = 'none';
             }
         }
 
-        window.onload = function() {
-            checkAndGenerateKey();
-        };
+        // Handle Enter key
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    adminLogin();
+                }
+            });
+        });
     </script>
 </head>
 <body>
-    <h2>Enter Access Key</h2>
-    <input type="text" id="accessKey" placeholder="Enter Key">
-    <button onclick="checkKey()">Submit</button>
-    <br><br>
-    <a href="admin.html">Admin Login</a>
+    <div class="stars"></div>
+    <div class="space-background">
+        <div class="planet planet1"></div>
+        <div class="planet planet2"></div>
+    </div>
+    <div class="container">
+        <h2>Space Admin Console</h2>
+        <div class="input-group">
+            <input type="password" id="adminPassword" placeholder="Enter Admin Password" autocomplete="current-password">
+        </div>
+        <button id="submit-button" onclick="adminLogin()">Access Console</button>
+        <div id="error-message" class="error"></div>
+        <div id="key-display" class="key-display"></div>
+        <center><a href="index.html" class="back-link">← Return to Portal</a></center>
+    </div>
 </body>
 </html>
