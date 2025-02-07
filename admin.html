@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Access</title>
+    <script>
+        function adminLogin() {
+            var adminPassword = document.getElementById('adminPassword').value;
+            var correctPassword = 'cavanstoolsontop';
+
+            if (adminPassword === correctPassword) {
+                var storedData = JSON.parse(localStorage.getItem('accessKey'));
+                if (storedData) {
+                    alert('Current Access Key: ' + storedData.key);
+                } else {
+                    alert('No key found. Please generate a new key on the main page.');
+                }
+            } else {
+                alert('Incorrect password. Please try again.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Admin Login</h2>
+    <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+    <button onclick="adminLogin()">Submit</button>
+    <br><br>
+    <a href="index.html">Back to Main Page</a>
+</body>
+</html>
