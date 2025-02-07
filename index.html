@@ -140,77 +140,77 @@
         .admin-link:hover {
             color: #fff;
         }
+
+        /* Messages */
+        .message {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 1em;
+        }
     </style>
-    <script>
-        function generateNewKey() {
-            const array = new Uint8Array(8);
-            crypto.getRandomValues(array);
-            const newKey = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-            
-            try {
-                const timestamp = new Date().getTime();
-                localStorage.setItem('accessKey', JSON.stringify({ 
-                    key: newKey, 
-                    timestamp: timestamp 
-                }));
-                return newKey;
-            } catch (e) {
-                console.error('localStorage error:', e);
-                return newKey;
-            }
-        }
-
-        function checkAndGenerateKey() {
-            try {
-                const storedData = JSON.parse(localStorage.getItem('accessKey'));
-                if (!storedData || (new Date().getTime() - storedData.timestamp) > 86400000) {
-                    return generateNewKey();
-                }
-                return storedData.key;
-            } catch (e) {
-                return generateNewKey();
-            }
-        }
-
-        function checkKey() {
-            const input = document.getElementById('accessKey');
-            const key = input.value.trim();
-            const correctKey = checkAndGenerateKey();
-            
-            if (key === correctKey) {
-                input.style.borderColor = '#4CAF50';
-                const win = window.open('about:blank', '_blank');
-                if (win) {
-                    win.document.write('<iframe src="https://cavansproxy.vercel.app/" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>');
-                }
-            } else {
-                input.classList.add('invalid');
-                setTimeout(() => {
-                    input.classList.remove('invalid');
-                }, 500);
-            }
-        }
-
-        window.onload = function() {
-            checkAndGenerateKey();
-            
-            document.getElementById('accessKey').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    checkKey();
-                }
-            });
-        };
-    </script>
 </head>
 <body>
     <div class="stars"></div>
     <div class="container">
         <h2>Cavans Tools Access</h2>
+
+        <!-- Registration -->
+        <h3>Register</h3>
         <div class="input-group">
-            <input type="text" id="accessKey" placeholder="Enter Access Key" autocomplete="off">
+            <input type="text" id="reg-username" placeholder="Enter Username" autocomplete="off">
         </div>
-        <button class="submit-btn" onclick="checkKey()">Enter Portal</button>
+        <div class="input-group">
+            <input type="password" id="reg-password" placeholder="Enter Password">
+        </div>
+        <button class="submit-btn" onclick="register()">Register</button>
+        <p id="reg-message" class="message"></p>
+
+        <!-- Login -->
+        <h3>Login</h3>
+        <div class="input-group">
+            <input type="text" id="login-username" placeholder="Enter Username" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <input type="password" id="login-password" placeholder="Enter Password">
+        </div>
+        <button class="submit-btn" onclick="login()">Login</button>
+        <p id="login-message" class="message"></p>
+
         <center><a href="admin.html" class="admin-link">Admin Access</a></center>
     </div>
+
+    <script>
+        async function register() {
+            const username = document.getElementById("reg-username").value;
+            const password = document.getElementById("reg-password").value;
+            
+            const res = await fetch("/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            document.getElementById("reg-message").innerText = data.message;
+        }
+
+        async function login() {
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
+            
+            const res = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = "dashboard.html";
+            } else {
+                document.getElementById("login-message").innerText = data.message;
+            }
+        }
+    </script>
 </body>
 </html>
