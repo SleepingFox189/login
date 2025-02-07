@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Key Access</title>
+    <script>
+        function generateNewKey() {
+            var newKey = Math.random().toString(36).substring(2, 12);
+            var timestamp = new Date().getTime();
+            localStorage.setItem('accessKey', JSON.stringify({ key: newKey, timestamp: timestamp }));
+            return newKey;
+        }
+
+        function checkAndGenerateKey() {
+            var storedData = JSON.parse(localStorage.getItem('accessKey'));
+            if (!storedData || (new Date().getTime() - storedData.timestamp) > 86400000) {
+                return generateNewKey();
+            }
+            return storedData.key;
+        }
+
+        function checkKey() {
+            var key = document.getElementById('accessKey').value;
+            var correctKey = checkAndGenerateKey();
+
+            if (key === correctKey) {
+                window.open('https://ctv2-pearl.vercel.app/', 'about:blank');
+            } else {
+                alert('Incorrect key. Please try again.');
+            }
+        }
+
+        window.onload = function() {
+            checkAndGenerateKey();
+        };
+    </script>
+</head>
+<body>
+    <h2>Enter Access Key</h2>
+    <input type="text" id="accessKey" placeholder="Enter Key">
+    <button onclick="checkKey()">Submit</button>
+    <br><br>
+    <a href="admin.html">Admin Login</a>
+</body>
+</html>
