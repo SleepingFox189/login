@@ -345,23 +345,47 @@
         }
 
         function checkKey() {
-            const input = document.getElementById('accessKey');
-            const key = input.value.trim();
-            const correctKey = checkAndGenerateKey();
-            
-            if (key === correctKey) {
-                const win = window.open('about:blank', '_blank');
-                if (win) {
-                    win.document.write('<iframe src="https://cavansproxy.vercel.app/" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>');
-                }
-            } else {
-                showMessage('Invalid access key', true);
-                input.classList.add('invalid');
-                setTimeout(() => {
-                    input.classList.remove('invalid');
-                }, 500);
-            }
+    const input = document.getElementById('accessKey').value.trim();
+    
+    try {
+        // Retrieve stored key
+        const storedData = JSON.parse(localStorage.getItem('accessKey'));
+
+        if (!storedData || !storedData.key) {
+            showMessage('No access key found. Please generate a new key.', true);
+            return;
         }
+
+        console.log('Stored Key:', storedData.key);
+        console.log('User Input Key:', input);
+
+        // Compare keys
+        if (input === storedData.key) {
+            showMessage('Access granted!', false);
+            openPortal();
+        } else {
+            showMessage('Invalid access key', true);
+            document.getElementById('accessKey').classList.add('invalid');
+            setTimeout(() => {
+                document.getElementById('accessKey').classList.remove('invalid');
+            }, 500);
+        }
+    } catch (error) {
+        console.error('Error retrieving key:', error);
+        showMessage('Error checking access key. Try again.', true);
+    }
+}
+
+// Open the portal in a new tab
+function openPortal() {
+    const win = window.open('about:blank', '_blank');
+    if (win) {
+        win.document.write('<iframe src="https://cavansproxy.vercel.app/" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>');
+    } else {
+        showMessage('Popup blocked! Allow popups and try again.', true);
+    }
+}
+
 
         // Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
