@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cavans Tools Access Console</title>
+    <title>Cavans Tools Admin Panel</title>
     <style>
         * {
             margin: 0;
@@ -16,64 +16,13 @@
             min-height: 100vh;
             background: linear-gradient(45deg, #1a1a3c, #2d2d6d);
             color: #fff;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .space-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        @keyframes movePlanets {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .planet {
-            position: absolute;
-            border-radius: 50%;
-            animation: movePlanets linear infinite;
-        }
-
-        .planet1 {
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle at 30% 30%, #7aa7ff, #1a1a3c);
-            top: 10%;
-            left: 10%;
-            animation-duration: 20s;
-        }
-
-        .planet2 {
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle at 30% 30%, #ff7a7a, #3c1a1a);
-            bottom: 10%;
-            right: 10%;
-            animation-duration: 25s;
+            padding: 20px;
         }
 
         .container {
-            position: relative;
-            max-width: 500px;
-            margin: 100px auto;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         h2 {
@@ -86,9 +35,99 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .admin-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #7aa7ff;
+        }
+
+        .user-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .user-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: grid;
+            gap: 5px;
+        }
+
+        .user-info span {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .approve-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .reject-btn, .delete-btn {
+            background: #ff4444;
+            color: white;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .admin-login {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
         .input-group {
-            position: relative;
-            margin: 30px 0;
+            margin-bottom: 20px;
         }
 
         input {
@@ -99,206 +138,194 @@
             border-radius: 10px;
             color: #fff;
             font-size: 1.1em;
-            transition: all 0.3s ease;
             outline: none;
         }
 
-        input:focus {
-            border-color: #7aa7ff;
-            box-shadow: 0 0 20px rgba(122, 167, 255, 0.3);
-        }
-
-        button {
+        .login-btn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(45deg, #7aa7ff, #5f86ff);
+            color: white;
             border: none;
             border-radius: 10px;
-            color: #fff;
-            font-size: 1.1em;
             cursor: pointer;
+            font-size: 1.1em;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
-        button:hover {
+        .login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
         }
 
-        button:disabled {
-            background: #666;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .key-display {
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+        #adminPanel {
             display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .error {
-            color: #ff4444;
-            margin-top: 10px;
-            display: none;
-            animation: shake 0.5s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 30px;
-            color: #fff;
-            text-decoration: none;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .back-link::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            bottom: -5px;
-            left: 0;
-            background: linear-gradient(90deg, transparent, #7aa7ff, transparent);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .back-link:hover::after {
-            transform: scaleX(1);
-        }
-
-        /* Stars animation */
-        .stars {
-            position: fixed;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
-            animation: animStar 50s linear infinite;
-        }
-        .stars::after {
-            content: " ";
-            position: absolute;
-            top: 2000px;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
-        }
-
-        @keyframes animStar {
-            from { transform: translateY(0px); }
-            to { transform: translateY(-2000px); }
         }
     </style>
+</head>
+<body>
+    <div id="adminLogin" class="admin-login">
+        <h2>Admin Login</h2>
+        <div class="input-group">
+            <input type="text" id="adminUsername" placeholder="Admin Username">
+        </div>
+        <div class="input-group">
+            <input type="password" id="adminPassword" placeholder="Admin Password">
+        </div>
+        <button class="login-btn" onclick="adminLogin()">Login</button>
+    </div>
+
+    <div id="adminPanel" class="container">
+        <h2>Admin Panel</h2>
+        
+        <div class="admin-section">
+            <h3 class="section-title">Pending Requests</h3>
+            <div id="pendingUsers" class="user-list">
+                <!-- Pending users will be populated here -->
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <h3 class="section-title">Approved Users</h3>
+            <div id="approvedUsers" class="user-list">
+                <!-- Approved users will be populated here -->
+            </div>
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+
     <script>
-        let loginAttempts = 0;
-        let lastAttemptTime = 0;
-        const MAX_ATTEMPTS = 3;
-        const LOCKOUT_DURATION = 30000; // 30 seconds
+        // Admin credentials (in a real application, this should be server-side)
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
 
         function adminLogin() {
-            const now = Date.now();
-            const errorElement = document.getElementById('error-message');
-            const submitButton = document.getElementById('submit-button');
-            const keyDisplay = document.getElementById('key-display');
-            
-            if (loginAttempts >= MAX_ATTEMPTS && (now - lastAttemptTime) < LOCKOUT_DURATION) {
-                const remainingTime = Math.ceil((LOCKOUT_DURATION - (now - lastAttemptTime)) / 1000);
-                errorElement.textContent = `Access locked. Retry in ${remainingTime} seconds`;
-                errorElement.style.display = 'block';
-                submitButton.disabled = true;
-                return;
-            }
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
 
-            if ((now - lastAttemptTime) >= LOCKOUT_DURATION) {
-                loginAttempts = 0;
-                submitButton.disabled = false;
-                errorElement.style.display = 'none';
-            }
-
-            const adminPassword = document.getElementById('adminPassword').value;
-            const correctPassword = 'cavanstoolsontop';
-            
-            if (adminPassword === correctPassword) {
-                try {
-                    const storedData = JSON.parse(localStorage.getItem('accessKey'));
-                    if (storedData && storedData.key) {
-                        keyDisplay.textContent = `Current Access Key: ${storedData.key}`;
-                        keyDisplay.style.display = 'block';
-                        errorElement.style.display = 'none';
-                    } else {
-                        errorElement.textContent = 'No active key found. Generate a new one from the main page.';
-                        errorElement.style.display = 'block';
-                        keyDisplay.style.display = 'none';
-                    }
-                } catch (e) {
-                    errorElement.textContent = 'Error accessing key data. Please try again.';
-                    errorElement.style.display = 'block';
-                    keyDisplay.style.display = 'none';
-                }
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadUsers();
             } else {
-                loginAttempts++;
-                lastAttemptTime = now;
-                
-                if (loginAttempts >= MAX_ATTEMPTS) {
-                    submitButton.disabled = true;
-                    setTimeout(() => {
-                        submitButton.disabled = false;
-                        loginAttempts = 0;
-                        errorElement.style.display = 'none';
-                    }, LOCKOUT_DURATION);
-                }
-
-                errorElement.textContent = `Invalid password. ${MAX_ATTEMPTS - loginAttempts} attempts remaining`;
-                errorElement.style.display = 'block';
-                keyDisplay.style.display = 'none';
+                showMessage('Invalid admin credentials', true);
             }
         }
 
-        // Handle Enter key
+        function showMessage(message, isError = false) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = isError ? 'rgba(255, 68, 68, 0.8)' : 'rgba(76, 175, 80, 0.8)';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function loadUsers() {
+            // Load pending users
+            const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+            const pendingContainer = document.getElementById('pendingUsers');
+            pendingContainer.innerHTML = pendingUsers.length ? '' : '<p>No pending requests</p>';
+            
+            pendingUsers.forEach(user => {
+                const userCard = createUserCard(user, true);
+                pendingContainer.appendChild(userCard);
+            });
+
+            // Load approved users
+            const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+            const approvedContainer = document.getElementById('approvedUsers');
+            approvedContainer.innerHTML = approvedUsers.length ? '' : '<p>No approved users</p>';
+            
+            approvedUsers.forEach(user => {
+                const userCard = createUserCard(user, false);
+                approvedContainer.appendChild(userCard);
+            });
+        }
+
+        function createUserCard(user, isPending) {
+            const div = document.createElement('div');
+            div.className = 'user-card';
+            
+            const info = document.createElement('div');
+            info.className = 'user-info';
+            info.innerHTML = `
+                <strong>${user.username}</strong>
+                <span>${user.email}</span>
+                <span>Registered: ${new Date(user.timestamp).toLocaleString()}</span>
+            `;
+            
+            div.appendChild(info);
+
+            if (isPending) {
+                const approveBtn = document.createElement('button');
+                approveBtn.className = 'btn approve-btn';
+                approveBtn.textContent = 'Approve';
+                approveBtn.onclick = () => approveUser(user);
+                
+                const rejectBtn = document.createElement('button');
+                rejectBtn.className = 'btn reject-btn';
+                rejectBtn.textContent = 'Reject';
+                rejectBtn.onclick = () => rejectUser(user);
+
+                div.appendChild(approveBtn);
+                div.appendChild(rejectBtn);
+            } else {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn delete-btn';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteUser(user);
+                
+                div.appendChild(deleteBtn);
+            }
+
+            return div;
+        }
+
+        function approveUser(user) {
+            // Remove from pending
+            let pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+            pendingUsers = pendingUsers.filter(u => u.username !== user.username);
+            localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+
+            // Add to approved
+            const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+            approvedUsers.push({...user, status: 'approved'});
+            localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
+
+            showMessage(`Approved user: ${user.username}`);
+            loadUsers();
+        }
+
+        function rejectUser(user) {
+            let pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+            pendingUsers = pendingUsers.filter(u => u.username !== user.username);
+            localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+
+            showMessage(`Rejected user: ${user.username}`);
+            loadUsers();
+        }
+
+        function deleteUser(user) {
+            let approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+            approvedUsers = approvedUsers.filter(u => u.username !== user.username);
+            localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
+
+            showMessage(`Deleted user: ${user.username}`);
+            loadUsers();
+        }
+
+        // Event listener for Enter key on admin login
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    adminLogin();
-                }
+                if (e.key === 'Enter') adminLogin();
             });
         });
     </script>
-</head>
-<body>
-    <div class="stars"></div>
-    <div class="space-background">
-        <div class="planet planet1"></div>
-        <div class="planet planet2"></div>
-    </div>
-    <div class="container">
-        <h2>Space Admin Console</h2>
-        <div class="input-group">
-            <input type="password" id="adminPassword" placeholder="Enter Admin Password" autocomplete="current-password">
-        </div>
-        <button id="submit-button" onclick="adminLogin()">Access Console</button>
-        <div id="error-message" class="error"></div>
-        <div id="key-display" class="key-display"></div>
-        <center><a href="index.html" class="back-link">← Return to Portal</a></center>
-    </div>
 </body>
 </html>
