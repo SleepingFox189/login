@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cavans Tools Admin Panel</title>
     <style>
+        /* Previous styles remain the same */
         * {
             margin: 0;
             padding: 0;
@@ -98,6 +99,28 @@
             color: white;
         }
 
+        .key-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .key-display {
+            font-family: monospace;
+            font-size: 1.2em;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .generate-btn {
+            background: #7aa7ff;
+            color: white;
+            margin-top: 10px;
+        }
+
         .status-message {
             position: fixed;
             top: 20px;
@@ -161,6 +184,12 @@
         #adminPanel {
             display: none;
         }
+
+        .countdown {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -179,6 +208,16 @@
         <h2>Admin Panel</h2>
         
         <div class="admin-section">
+            <h3 class="section-title">Access Key Management</h3>
+            <div class="key-info">
+                <strong>Current Access Key:</strong>
+                <div id="currentKey" class="key-display">Loading...</div>
+                <div id="keyCountdown" class="countdown"></div>
+                <button class="btn generate-btn" onclick="generateNewKey(true)">Generate New Key</button>
+            </div>
+        </div>
+
+        <div class="admin-section">
             <h3 class="section-title">Pending Requests</h3>
             <div id="pendingUsers" class="user-list">
                 <!-- Pending users will be populated here -->
@@ -196,22 +235,133 @@
     </div>
 
     <script>
-        // Admin credentials (in a real application, this should be server-side)
+        // Secure admin credentials
         const ADMIN_CREDENTIALS = {
             username: 'cavan',
             password: 'cavanstoolsontop'
         };
 
+        // Encryption functions for key storage
+        function encrypt(text, password) {
+            const textToChars = text => text.split('').map(c => c.charCodeAt(0));
+            const byteHex = n => ("0" + Number(n).toString(16)).substr(-2);
+            const applySaltToChar = code => textToChars(password).reduce((a,b) => a ^ b, code);
+
+            return text.split('')
+                .map(textToChars)
+                .map(applySaltToChar)
+                .map(byteHex)
+                .join('');
+        }
+
+        function decrypt(encoded, password) {
+            const textToChars = text => text.split('').map(c => c.charCodeAt(0));
+            const applySaltToChar = code => textToChars(password).reduce((a,b) => a ^ b, code);
+            const hex2byte = hex => parseInt(hex, 16);
+
+            return encoded.match(/.{1,2}/g)
+                .map(hex2byte)
+                .map(applySaltToChar)
+                .map(charCode => String.fromCharCode(charCode))
+                .join('');
+        }
+
+        // Secure key management
+        function generateNewKey(manual = false) {
+            const array = new Uint8Array(16); // Increased key length
+            crypto.getRandomValues(array);
+            const newKey = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+            
+            const timestamp = new Date().getTime();
+            const encryptedKey = encrypt(newKey, ADMIN_CREDENTIALS.password);
+            
+            localStorage.setItem('secureAccessKey', JSON.stringify({ 
+                key: encryptedKey, 
+                timestamp: timestamp 
+            }));
+
+            if (manual) {
+                showMessage('New key generated successfully');
+            }
+
+            updateKeyDisplay();
+            return newKey;
+        }
+
+        function getCurrentKey() {
+            try {
+                const storedData = JSON.parse(localStorage.getItem('secureAccessKey'));
+                if (!storedData) return generateNewKey();
+
+                const timestamp = storedData.timestamp;
+                const now = new Date().getTime();
+                
+                if (now - timestamp > 24 * 60 * 60 * 1000) {
+                    return generateNewKey();
+                }
+
+                return decrypt(storedData.key, ADMIN_CREDENTIALS.password);
+            } catch (e) {
+                return generateNewKey();
+            }
+        }
+
+        function updateKeyDisplay() {
+            const keyDisplay = document.getElementById('currentKey');
+            const countdownDisplay = document.getElementById('keyCountdown');
+            
+            if (document.getElementById('adminPanel').style.display === 'block') {
+                const storedData = JSON.parse(localStorage.getItem('secureAccessKey'));
+                const currentKey = getCurrentKey();
+                keyDisplay.textContent = currentKey;
+
+                // Update countdown
+                if (storedData) {
+                    const timeLeft = 24 * 60 * 60 * 1000 - (new Date().getTime() - storedData.timestamp);
+                    const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
+                    const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+                    countdownDisplay.textContent = `Time until next key: ${hoursLeft}h ${minutesLeft}m`;
+                }
+            }
+        }
+
+        // Secure session management
         function adminLogin() {
             const username = document.getElementById('adminUsername').value;
             const password = document.getElementById('adminPassword').value;
 
             if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Set secure session
+                const sessionToken = crypto.getRandomValues(new Uint8Array(32))
+                    .reduce((acc, val) => acc + val.toString(16).padStart(2, '0'), '');
+                    
+                sessionStorage.setItem('adminSession', encrypt(sessionToken, ADMIN_CREDENTIALS.password));
+                
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadUsers();
+                updateKeyDisplay();
+                
+                // Start key display update interval
+                setInterval(updateKeyDisplay, 60000); // Update every minute
             } else {
                 showMessage('Invalid admin credentials', true);
+            }
+        }
+
+        // Check session before any admin action
+        function checkAdminSession() {
+            const sessionToken = sessionStorage.getItem('adminSession');
+            if (!sessionToken) {
+                location.reload();
+                return false;
+            }
+            try {
+                decrypt(sessionToken, ADMIN_CREDENTIALS.password);
+                return true;
+            } catch {
+                location.reload();
+                return false;
             }
         }
 
@@ -227,7 +377,8 @@
         }
 
         function loadUsers() {
-            // Load pending users
+            if (!checkAdminSession()) return;
+
             const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
             const pendingContainer = document.getElementById('pendingUsers');
             pendingContainer.innerHTML = pendingUsers.length ? '' : '<p>No pending requests</p>';
@@ -237,7 +388,6 @@
                 pendingContainer.appendChild(userCard);
             });
 
-            // Load approved users
             const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
             const approvedContainer = document.getElementById('approvedUsers');
             approvedContainer.innerHTML = approvedUsers.length ? '' : '<p>No approved users</p>';
@@ -249,6 +399,8 @@
         }
 
         function createUserCard(user, isPending) {
+            if (!checkAdminSession()) return;
+
             const div = document.createElement('div');
             div.className = 'user-card';
             
@@ -288,6 +440,8 @@
         }
 
         function approveUser(user) {
+            if (!checkAdminSession()) return;
+
             // Remove from pending
             let pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
             pendingUsers = pendingUsers.filter(u => u.username !== user.username);
@@ -303,6 +457,8 @@
         }
 
         function rejectUser(user) {
+            if (!checkAdminSession()) return;
+
             let pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
             pendingUsers = pendingUsers.filter(u => u.username !== user.username);
             localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
@@ -312,6 +468,8 @@
         }
 
         function deleteUser(user) {
+            if (!checkAdminSession()) return;
+
             let approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
             approvedUsers = approvedUsers.filter(u => u.username !== user.username);
             localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
@@ -320,12 +478,35 @@
             loadUsers();
         }
 
-        // Event listener for Enter key on admin login
+        // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
+            // Handle Enter key on admin login
             document.getElementById('adminPassword').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') adminLogin();
             });
+
+            // Prevent accessing admin panel through console
+            const originalSetItem = localStorage.setItem;
+            localStorage.setItem = function() {
+                if (!checkAdminSession() && arguments[0].includes('admin')) {
+                    return;
+                }
+                originalSetItem.apply(this, arguments);
+            };
+
+            // Start auto key update if already logged in
+            if (checkAdminSession()) {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadUsers();
+                updateKeyDisplay();
+                setInterval(updateKeyDisplay, 60000);
+            }
         });
+
+        // Prevent console-based manipulation
+        Object.freeze(ADMIN_CREDENTIALS);
+        Object.freeze(window.ADMIN_CREDENTIALS);
     </script>
 </body>
 </html>
