@@ -20,30 +20,6 @@
             position: relative;
         }
 
-        .stars {
-            position: fixed;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
-            animation: animStar 50s linear infinite;
-        }
-
-        .stars::after {
-            content: " ";
-            position: absolute;
-            top: 2000px;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
-        }
-
-        @keyframes animStar {
-            from { transform: translateY(0px); }
-            to { transform: translateY(-2000px); }
-        }
-
         .container {
             position: relative;
             max-width: 400px;
@@ -70,27 +46,6 @@
             background: linear-gradient(45deg, #fff, #7aa7ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .tab-container {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
         }
 
         .input-group {
@@ -129,14 +84,6 @@
             box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
         .status-message {
             margin-top: 15px;
             padding: 10px;
@@ -150,23 +97,28 @@
             opacity: 1;
         }
 
-        .admin-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Cavans Tools Access</h2>
-        <div class="tab-container">
-            <div class="tab active" onclick="switchTab('login')">Login</div>
-            <div class="tab" onclick="switchTab('register')">Register</div>
+
+        <!-- Login Form -->
+        <div id="login-section">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Enter Username">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Enter Password">
+            </div>
+            <button class="submit-btn" onclick="checkLogin()">Login</button>
         </div>
-        
-        <div id="key-input" class="tab-content active">
+
+        <!-- Access Key Form (Hidden Initially) -->
+        <div id="key-section" class="hidden">
             <div class="input-group">
                 <input type="text" id="accessKey" placeholder="Enter Access Key">
             </div>
@@ -174,13 +126,28 @@
         </div>
         
         <div id="status-message" class="status-message"></div>
-        <center><a href="admin.html" class="admin-link">Admin Access</a></center>
     </div>
     
     <script>
+        function checkLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // Required username & password
+            if (username === "Cavan" && password === "cavanstoolsontop") {
+                showMessage("Login successful!", false);
+                
+                // Hide login, show access key section
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('key-section').classList.remove('hidden');
+            } else {
+                showMessage("Invalid login credentials!", true);
+            }
+        }
+
         function checkKey() {
             const input = document.getElementById('accessKey').value.trim();
-            
+
             try {
                 const storedData = JSON.parse(localStorage.getItem('accessKey'));
 
@@ -188,9 +155,6 @@
                     showMessage('No access key found. Please generate a new key.', true);
                     return;
                 }
-
-                console.log('Stored Key:', storedData.key);
-                console.log('User Input Key:', input);
 
                 if (input === storedData.key) {
                     showMessage('Access granted!', false);
