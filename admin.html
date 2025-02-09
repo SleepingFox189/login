@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cavans Tools Admin Panel</title>
     <style>
-        /* Previous styles remain the same */
+        /* Previous styles remain exactly the same */
         * {
             margin: 0;
             padding: 0;
@@ -268,7 +268,7 @@
 
         // Secure key management
         function generateNewKey(manual = false) {
-            const array = new Uint8Array(16); // Increased key length
+            const array = new Uint8Array(16);
             crypto.getRandomValues(array);
             const newKey = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
             
@@ -315,7 +315,6 @@
                 const currentKey = getCurrentKey();
                 keyDisplay.textContent = currentKey;
 
-                // Update countdown
                 if (storedData) {
                     const timeLeft = 24 * 60 * 60 * 1000 - (new Date().getTime() - storedData.timestamp);
                     const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
@@ -325,42 +324,41 @@
             }
         }
 
-        // Secure session management
+        // Improved session management
         function adminLogin() {
             const username = document.getElementById('adminUsername').value;
             const password = document.getElementById('adminPassword').value;
 
             if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                // Set secure session
                 const sessionToken = crypto.getRandomValues(new Uint8Array(32))
                     .reduce((acc, val) => acc + val.toString(16).padStart(2, '0'), '');
-                    
+                
                 sessionStorage.setItem('adminSession', encrypt(sessionToken, ADMIN_CREDENTIALS.password));
                 
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadUsers();
                 updateKeyDisplay();
-                
-                // Start key display update interval
-                setInterval(updateKeyDisplay, 60000); // Update every minute
+                setInterval(updateKeyDisplay, 60000);
             } else {
                 showMessage('Invalid admin credentials', true);
             }
         }
 
-        // Check session before any admin action
+        // Improved session check that doesn't trigger page reload
         function checkAdminSession() {
             const sessionToken = sessionStorage.getItem('adminSession');
             if (!sessionToken) {
-                location.reload();
+                document.getElementById('adminLogin').style.display = 'block';
+                document.getElementById('adminPanel').style.display = 'none';
                 return false;
             }
             try {
                 decrypt(sessionToken, ADMIN_CREDENTIALS.password);
                 return true;
             } catch {
-                location.reload();
+                document.getElementById('adminLogin').style.display = 'block';
+                document.getElementById('adminPanel').style.display = 'none';
                 return false;
             }
         }
@@ -480,33 +478,23 @@
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
-            // Handle Enter key on admin login
-            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') adminLogin();
-            });
-
-            // Prevent accessing admin panel through console
-            const originalSetItem = localStorage.setItem;
-            localStorage.setItem = function() {
-                if (!checkAdminSession() && arguments[0].includes('admin')) {
-                    return;
-                }
-                originalSetItem.apply(this, arguments);
-            };
-
-            // Start auto key update if already logged in
-            if (checkAdminSession()) {
+            // Check session on page load
+            if (sessionStorage.getItem('adminSession')) {
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadUsers();
                 updateKeyDisplay();
                 setInterval(updateKeyDisplay, 60000);
             }
+
+            // Handle Enter key on admin login
+            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') adminLogin();
+            });
         });
 
         // Prevent console-based manipulation
         Object.freeze(ADMIN_CREDENTIALS);
-        Object.freeze(window.ADMIN_CREDENTIALS);
     </script>
 </body>
 </html>
