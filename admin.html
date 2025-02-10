@@ -243,6 +243,7 @@
             localStorage.setItem('accessKey', key);
             updateKeyDisplay();
             showMessage('New key generated successfully');
+            return key;
         }
 
         function getCurrentKey() {
@@ -251,7 +252,8 @@
 
         function updateKeyDisplay() {
             const keyDisplay = document.getElementById('currentKey');
-            keyDisplay.textContent = getCurrentKey();
+            const key = getCurrentKey();
+            keyDisplay.textContent = key;
         }
 
         function copyKey() {
