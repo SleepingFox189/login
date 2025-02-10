@@ -185,6 +185,18 @@
         .admin-link:hover {
             color: #fff;
         }
+
+        .invalid {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
     </style>
 </head>
 <body>
@@ -231,38 +243,6 @@
     </div>
     
     <script>
-        // Key generation functions
-        function generateNewKey() {
-            const array = new Uint8Array(8);
-            crypto.getRandomValues(array);
-            const newKey = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-            
-            try {
-                const timestamp = new Date().getTime();
-                localStorage.setItem('accessKey', JSON.stringify({ 
-                    key: newKey, 
-                    timestamp: timestamp 
-                }));
-                return newKey;
-            } catch (e) {
-                console.error('localStorage error:', e);
-                return newKey;
-            }
-        }
-
-        function checkAndGenerateKey() {
-            try {
-                const storedData = JSON.parse(localStorage.getItem('accessKey'));
-                if (!storedData || (new Date().getTime() - storedData.timestamp) > 86400000) {
-                    return generateNewKey();
-                }
-                return storedData.key;
-            } catch (e) {
-                return generateNewKey();
-            }
-        }
-
-        // UI Functions
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -285,7 +265,6 @@
             }, 3000);
         }
 
-        // Main Functions
         function register() {
             const username = document.getElementById('reg-username').value;
             const password = document.getElementById('reg-password').value;
@@ -347,7 +326,7 @@
         function checkKey() {
             const input = document.getElementById('accessKey');
             const key = input.value.trim();
-            const correctKey = checkAndGenerateKey();
+            const correctKey = localStorage.getItem('accessKey');
             
             if (key === correctKey) {
                 const win = window.open('about:blank', '_blank');
