@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Read the key
+// Fetch the current access key
 app.get("/get-key", (req, res) => {
     fs.readFile("key.json", "utf8", (err, data) => {
         if (err) return res.status(500).json({ error: "Failed to read key.json" });
@@ -18,35 +18,16 @@ app.get("/get-key", (req, res) => {
 app.post("/set-key", (req, res) => {
     const newKey = { accessKey: Math.random().toString(36).substring(2, 10) };
     fs.writeFile("key.json", JSON.stringify(newKey), (err) => {
-        if (err) return res.status(500).json({ error: "Failed to write key.json" });
+        if (err) return res.status(500).json({ error: "Failed to update key.json" });
         res.json(newKey);
     });
 });
 
-// Get users
+// Fetch all users
 app.get("/get-users", (req, res) => {
     fs.readFile("users.json", "utf8", (err, data) => {
         if (err) return res.status(500).json({ error: "Failed to read users.json" });
         res.json(JSON.parse(data));
-    });
-});
-
-// Register a user
-app.post("/register", (req, res) => {
-    const { username, password, email } = req.body;
-    fs.readFile("users.json", "utf8", (err, data) => {
-        let users = err ? { pendingUsers: [], approvedUsers: [] } : JSON.parse(data);
-
-        if (users.pendingUsers.some(user => user.username === username) ||
-            users.approvedUsers.some(user => user.username === username)) {
-            return res.status(400).json({ error: "Username already exists" });
-        }
-
-        users.pendingUsers.push({ username, password, email });
-        fs.writeFile("users.json", JSON.stringify(users), (err) => {
-            if (err) return res.status(500).json({ error: "Failed to update users.json" });
-            res.json({ message: "Registration submitted for approval" });
-        });
     });
 });
 
@@ -65,6 +46,21 @@ app.post("/approve-user", (req, res) => {
         fs.writeFile("users.json", JSON.stringify(users), (err) => {
             if (err) return res.status(500).json({ error: "Failed to update users.json" });
             res.json({ message: "User approved" });
+        });
+    });
+});
+
+// Delete a user
+app.post("/delete-user", (req, res) => {
+    const { username } = req.body;
+    fs.readFile("users.json", "utf8", (err, data) => {
+        let users = err ? { pendingUsers: [], approvedUsers: [] } : JSON.parse(data);
+
+        users.approvedUsers = users.approvedUsers.filter(user => user.username !== username);
+
+        fs.writeFile("users.json", JSON.stringify(users), (err) => {
+            if (err) return res.status(500).json({ error: "Failed to update users.json" });
+            res.json({ message: "User deleted" });
         });
     });
 });
