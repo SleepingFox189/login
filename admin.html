@@ -10,384 +10,97 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Arial', sans-serif;
-            min-height: 100vh;
             background: linear-gradient(45deg, #1a1a3c, #2d2d6d);
-            color: #fff;
+            color: white;
             padding: 20px;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
-
-        h2 {
+        h1, h2 {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            background: linear-gradient(45deg, #fff, #7aa7ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .admin-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
-        .section-title {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            color: #7aa7ff;
-        }
-
-        .user-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .user-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-info {
-            display: grid;
-            gap: 5px;
-        }
-
-        .user-info span {
-            font-size: 0.9em;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
         .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
+            padding: 10px 20px;
             cursor: pointer;
+            border-radius: 5px;
             font-weight: bold;
             transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .approve-btn {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .reject-btn, .delete-btn {
-            background: #ff4444;
-            color: white;
-        }
-
-        .key-info {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .key-display {
-            font-family: monospace;
-            font-size: 1.2em;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            cursor: pointer;
-            user-select: all;
-        }
-
-        .generate-btn {
-            background: #7aa7ff;
-            color: white;
-            margin-top: 10px;
-        }
-
-        .status-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 5px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            display: none;
-            animation: slideIn 0.3s ease;
-        }
-
-        .admin-login {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 1.1em;
-            outline: none;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, #7aa7ff, #5f86ff);
-            color: white;
             border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
         }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
-        }
-
-        #adminPanel {
-            display: none;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        .btn:hover { transform: translateY(-2px); }
+        .approve-btn { background: #4CAF50; color: white; }
+        .reject-btn { background: #ff4444; color: white; }
     </style>
 </head>
 <body>
-    <div id="adminLogin" class="admin-login">
-        <h2>Admin Login</h2>
-        <div class="input-group">
-            <input type="text" id="adminUsername" placeholder="Admin Username">
+    <div class="container">
+        <h1>Admin Panel</h1>
+        <div>
+            <strong>Current Key:</strong>
+            <span id="currentKey">Loading...</span>
+            <button class="btn" onclick="generateNewKey()">Generate New Key</button>
         </div>
-        <div class="input-group">
-            <input type="password" id="adminPassword" placeholder="Admin Password">
-        </div>
-        <button class="login-btn" onclick="adminLogin()">Login</button>
-    </div>
-
-    <div id="adminPanel" class="container">
-        <h2>Admin Panel</h2>
-        
-        <div class="admin-section">
-            <h3 class="section-title">Access Key</h3>
-            <div class="key-info">
-                <strong>Current Access Key (Click to copy):</strong>
-                <div id="currentKey" class="key-display" onclick="copyKey()">Loading...</div>
-                <button class="btn generate-btn" onclick="generateNewKey()">Generate New Key</button>
-            </div>
-        </div>
-
-        <div class="admin-section">
-            <h3 class="section-title">Pending Requests</h3>
-            <div id="pendingUsers" class="user-list">
-                <!-- Pending users will be populated here -->
-            </div>
-        </div>
-
-        <div class="admin-section">
-            <h3 class="section-title">Approved Users</h3>
-            <div id="approvedUsers" class="user-list">
-                <!-- Approved users will be populated here -->
-            </div>
-        </div>
-
-        <div id="statusMessage" class="status-message"></div>
+        <h2>Pending Users</h2>
+        <div id="pendingUsers">Loading...</div>
     </div>
 
     <script>
-        // Admin credentials
-        const ADMIN_CREDENTIALS = {
-            username: 'cavan',
-            password: 'cavanstoolsontop'
-        };
-
-        // Key management
-        function generateNewKey() {
-            const array = new Uint8Array(16);
-            crypto.getRandomValues(array);
-            const key = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-            localStorage.setItem('accessKey', key);
-            updateKeyDisplay();
-            showMessage('New key generated successfully');
+        async function loadKey() {
+            let keyData = await fetch("key.json").then(res => res.json());
+            document.getElementById("currentKey").textContent = keyData.accessKey;
         }
 
-        function getCurrentKey() {
-            return localStorage.getItem('accessKey') || generateNewKey();
+        async function generateNewKey() {
+            let newKey = Math.random().toString(36).substring(2, 10);
+            let keyData = { accessKey: newKey };
+
+            await fetch("key.json", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(keyData)
+            });
+
+            document.getElementById("currentKey").textContent = newKey;
         }
 
-        function updateKeyDisplay() {
-            const keyDisplay = document.getElementById('currentKey');
-            keyDisplay.textContent = getCurrentKey();
+        async function loadUsers() {
+            let userData = await fetch("users.json").then(res => res.json());
+            let pendingUsers = userData.pendingUsers || [];
+
+            document.getElementById("pendingUsers").innerHTML = pendingUsers.length
+                ? pendingUsers.map(user =>
+                    `<div>${user.username} - <button class="btn approve-btn" onclick="approveUser('${user.username}')">Approve</button></div>`
+                  ).join("")
+                : "No pending users.";
         }
 
-        function copyKey() {
-            const key = getCurrentKey();
-            navigator.clipboard.writeText(key)
-                .then(() => showMessage('Key copied to clipboard!'))
-                .catch(() => showMessage('Failed to copy key', true));
-        }
+        async function approveUser(username) {
+            let userData = await fetch("users.json").then(res => res.json());
+            let userIndex = userData.pendingUsers.findIndex(user => user.username === username);
 
-        // Admin login
-        function adminLogin() {
-            const username = document.getElementById('adminUsername').value;
-            const password = document.getElementById('adminPassword').value;
+            if (userIndex > -1) {
+                let approvedUser = userData.pendingUsers.splice(userIndex, 1)[0];
+                userData.approvedUsers.push(approvedUser);
 
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                document.getElementById('adminLogin').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
+                await fetch("users.json", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(userData)
+                });
+
                 loadUsers();
-                updateKeyDisplay();
-            } else {
-                showMessage('Invalid admin credentials', true);
             }
         }
 
-        function showMessage(message, isError = false) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.textContent = message;
-            statusDiv.style.display = 'block';
-            statusDiv.style.background = isError ? 'rgba(255, 68, 68, 0.8)' : 'rgba(76, 175, 80, 0.8)';
-            
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 3000);
-        }
-
-        function loadUsers() {
-            const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
-            const pendingContainer = document.getElementById('pendingUsers');
-            pendingContainer.innerHTML = pendingUsers.length ? '' : '<p>No pending requests</p>';
-            
-            pendingUsers.forEach(user => {
-                const userCard = createUserCard(user, true);
-                pendingContainer.appendChild(userCard);
-            });
-
-            const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
-            const approvedContainer = document.getElementById('approvedUsers');
-            approvedContainer.innerHTML = approvedUsers.length ? '' : '<p>No approved users</p>';
-            
-            approvedUsers.forEach(user => {
-                const userCard = createUserCard(user, false);
-                approvedContainer.appendChild(userCard);
-            });
-        }
-
-        function createUserCard(user, isPending) {
-            const div = document.createElement('div');
-            div.className = 'user-card';
-            
-            const info = document.createElement('div');
-            info.className = 'user-info';
-            info.innerHTML = `
-                <strong>${user.username}</strong>
-                <span>${user.email}</span>
-                <span>Registered: ${new Date(user.timestamp).toLocaleString()}</span>
-            `;
-            
-            div.appendChild(info);
-
-            if (isPending) {
-                const approveBtn = document.createElement('button');
-                approveBtn.className = 'btn approve-btn';
-                approveBtn.textContent = 'Approve';
-                approveBtn.onclick = () => approveUser(user);
-                
-                const rejectBtn = document.createElement('button');
-                rejectBtn.className = 'btn reject-btn';
-                rejectBtn.textContent = 'Reject';
-                rejectBtn.onclick = () => rejectUser(user);
-
-                div.appendChild(approveBtn);
-                div.appendChild(rejectBtn);
-            } else {
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn delete-btn';
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.onclick = () => deleteUser(user);
-                
-                div.appendChild(deleteBtn);
-            }
-
-            return div;
-        }
-
-        function approveUser(user) {
-            let pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
-            pendingUsers = pendingUsers.filter(u => u.username !== user.username);
-            localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
-
-            const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
-            approvedUsers.push({...user, status: 'approved'});
-            localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
-
-            showMessage(`Approved user: ${user.username}`);
+        window.onload = function() {
+            loadKey();
             loadUsers();
-        }
-
-        function rejectUser(user) {
-            let pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
-            pendingUsers = pendingUsers.filter(u => u.username !== user.username);
-            localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
-
-            showMessage(`Rejected user: ${user.username}`);
-            loadUsers();
-        }
-
-        function deleteUser(user) {
-            let approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
-            approvedUsers = approvedUsers.filter(u => u.username !== user.username);
-            localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
-
-            showMessage(`Deleted user: ${user.username}`);
-            loadUsers();
-        }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') adminLogin();
-            });
-            
-            // Generate initial key if none exists
-            if (!localStorage.getItem('accessKey')) {
-                generateNewKey();
-            }
-        });
+        };
     </script>
 </body>
 </html>
