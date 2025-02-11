@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cavans Tools Admin Panel</title>
     <style>
+        /* CSS Styling */
         * {
             margin: 0;
             padding: 0;
@@ -35,53 +36,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .admin-login {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 1.1em;
-            outline: none;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, #7aa7ff, #5f86ff);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
-        }
-
-        #adminPanel {
-            display: none;
-        }
-
         .admin-section {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -107,30 +61,33 @@
             cursor: pointer;
             user-select: all;
         }
+
+        .login-btn {
+            padding: 10px;
+            background: linear-gradient(45deg, #7aa7ff, #5f86ff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
+        }
     </style>
 </head>
 <body>
-    <div id="adminLogin" class="admin-login">
-        <h2>Admin Login</h2>
-        <div class="input-group">
-            <input type="text" id="adminUsername" placeholder="Admin Username">
-        </div>
-        <div class="input-group">
-            <input type="password" id="adminPassword" placeholder="Admin Password">
-        </div>
-        <button class="login-btn" onclick="adminLogin()">Login</button>
-    </div>
-
-    <div id="adminPanel" class="container">
+    <div class="container">
         <h2>Admin Panel</h2>
         
         <div class="admin-section">
             <h3 class="section-title">Access Key</h3>
-            <div>
-                <strong>Current Access Key (Click to copy):</strong>
-                <div id="currentKey" class="key-display" onclick="copyKey()">Loading...</div>
-                <button class="login-btn" onclick="generateNewKey()">Generate New Key</button>
-            </div>
+            <strong>Current Access Key (Click to copy):</strong>
+            <div id="currentKey" class="key-display" onclick="copyKey()">Loading...</div>
+            <button class="login-btn" onclick="generateNewKey()">Generate New Key</button>
         </div>
 
         <div class="admin-section">
@@ -145,45 +102,20 @@
     </div>
 
     <script>
-        // Hardcoded Admin Credentials
-        const ADMIN_USERNAME = "cavan";
-        const ADMIN_PASSWORD = "cavanstoolsontop";
-
-        function adminLogin() {
-            let username = document.getElementById("adminUsername").value;
-            let password = document.getElementById("adminPassword").value;
-
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                document.getElementById("adminLogin").style.display = "none";
-                document.getElementById("adminPanel").style.display = "block";
-                loadKey();
-                loadUsers();
-            } else {
-                alert("Invalid admin credentials");
-            }
-        }
-
-        async function fetchJSON(file) {
-            let response = await fetch(file);
+        async function fetchJSON(url) {
+            let response = await fetch(url);
             return response.json();
         }
 
         async function loadKey() {
-            let keyData = await fetchJSON("key.json");
+            let keyData = await fetchJSON("http://localhost:3000/get-key");
             document.getElementById("currentKey").textContent = keyData.accessKey;
         }
 
         async function generateNewKey() {
-            let newKey = Math.random().toString(36).substring(2, 10);
-            let keyData = { accessKey: newKey };
-
-            await fetch("key.json", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(keyData)
-            });
-
-            document.getElementById("currentKey").textContent = newKey;
+            let response = await fetch("http://localhost:3000/set-key", { method: "POST" });
+            let keyData = await response.json();
+            document.getElementById("currentKey").textContent = keyData.accessKey;
         }
 
         function copyKey() {
@@ -193,7 +125,7 @@
         }
 
         async function loadUsers() {
-            let users = await fetchJSON("users.json");
+            let users = await fetchJSON("http://localhost:3000/get-users");
 
             document.getElementById("pendingUsers").innerHTML = users.pendingUsers.length
                 ? users.pendingUsers.map(user => `<div>${user.username} <button class="login-btn" onclick="approveUser('${user.username}')">Approve</button></div>`).join("")
@@ -205,36 +137,25 @@
         }
 
         async function approveUser(username) {
-            let users = await fetchJSON("users.json");
-
-            let userIndex = users.pendingUsers.findIndex(user => user.username === username);
-            if (userIndex !== -1) {
-                let approvedUser = users.pendingUsers.splice(userIndex, 1)[0];
-                users.approvedUsers.push(approvedUser);
-
-                await fetch("users.json", {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(users)
-                });
-
-                loadUsers();
-            }
+            await fetch("http://localhost:3000/approve-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username })
+            });
+            loadUsers();
         }
 
         async function deleteUser(username) {
-            let users = await fetchJSON("users.json");
-
-            users.approvedUsers = users.approvedUsers.filter(user => user.username !== username);
-
-            await fetch("users.json", {
-                method: "PUT",
+            await fetch("http://localhost:3000/delete-user", {
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(users)
+                body: JSON.stringify({ username })
             });
-
             loadUsers();
         }
+
+        loadKey();
+        loadUsers();
     </script>
 </body>
 </html>
