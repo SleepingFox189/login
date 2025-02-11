@@ -145,19 +145,15 @@
     </div>
 
     <script>
-        async function fetchJSON(file) {
-            let response = await fetch(file);
-            return response.json();
-        }
+        // Hardcoded Admin Credentials
+        const ADMIN_USERNAME = "cavan";
+        const ADMIN_PASSWORD = "cavanstoolsontop";
 
-        async function adminLogin() {
+        function adminLogin() {
             let username = document.getElementById("adminUsername").value;
             let password = document.getElementById("adminPassword").value;
 
-            let users = await fetchJSON("users.json");
-            let admin = users.approvedUsers.find(user => user.username === username && user.password === password);
-
-            if (admin) {
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
                 document.getElementById("adminLogin").style.display = "none";
                 document.getElementById("adminPanel").style.display = "block";
                 loadKey();
@@ -165,6 +161,11 @@
             } else {
                 alert("Invalid admin credentials");
             }
+        }
+
+        async function fetchJSON(file) {
+            let response = await fetch(file);
+            return response.json();
         }
 
         async function loadKey() {
