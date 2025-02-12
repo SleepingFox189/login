@@ -20,7 +20,6 @@
             position: relative;
         }
 
-        /* Stars animation */
         .stars {
             position: fixed;
             width: 1px;
@@ -29,6 +28,7 @@
             box-shadow: 1744px 122px #FFF, 134px 1321px #FFF, 92px 859px #FFF;
             animation: animStar 50s linear infinite;
         }
+
         .stars::after {
             content: " ";
             position: absolute;
@@ -70,6 +70,27 @@
             background: linear-gradient(45deg, #fff, #7aa7ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        .tab-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
         .input-group {
@@ -117,42 +138,88 @@
             box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
         }
 
-        @keyframes invalid {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-message.show {
+            opacity: 1;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .error {
+            background: rgba(255, 68, 68, 0.3);
         }
 
         .invalid {
-            animation: invalid 0.3s ease;
-            border-color: #ff4444 !important;
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
         }
 
-        .admin-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-
-        .admin-link:hover {
-            color: #fff;
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
     </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="container">
+        <h2>Cavans Tools Access</h2>
+
+        <!-- Tab Container -->
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('key')">Enter Access Key</div>
+        </div>
+
+        <!-- Access Key Tab -->
+        <div id="key-tab" class="tab-content active">
+            <div class="input-group">
+                <input type="text" id="accessKey" placeholder="Enter Access Key">
+            </div>
+            <button class="submit-btn" onclick="checkKey()">Enter Portal</button>
+        </div>
+
+        <!-- Status Message -->
+        <div id="status-message" class="status-message"></div>
+
+        <!-- Admin Link -->
+        <center><a href="admin.html" class="admin-link">Admin Access</a></center>
+    </div>
+
     <script>
-        async function getServerKey() {
-            try {
-                const response = await fetch('/get-key');
-                const data = await response.json();
-                return data.accessKey;
-            } catch (error) {
-                console.error('Error fetching key:', error);
-                return null;
+        // Switch Tab Functionality
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'key') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('key-tab').classList.add('active');
             }
         }
 
+        // Show Status Message
+        function showMessage(message, isError = false) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status-message ' + (isError ? 'error' : 'success') + ' show';
+            setTimeout(() => {
+                statusDiv.className = 'status-message';
+            }, 3000);
+        }
+
+        // Check Access Key
         async function checkKey() {
             const input = document.getElementById('accessKey');
             const key = input.value.trim();
@@ -177,6 +244,19 @@
             }
         }
 
+        // Fetch server key
+        async function getServerKey() {
+            try {
+                const response = await fetch('/get-key');
+                const data = await response.json();
+                return data.accessKey;
+            } catch (error) {
+                console.error('Error fetching key:', error);
+                return null;
+            }
+        }
+
+        // Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('accessKey').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -185,16 +265,5 @@
             });
         });
     </script>
-</head>
-<body>
-    <div class="stars"></div>
-    <div class="container">
-        <h2>Cavans Tools Access</h2>
-        <div class="input-group">
-            <input type="text" id="accessKey" placeholder="Enter Access Key" autocomplete="off">
-        </div>
-        <button class="submit-btn" onclick="checkKey()">Enter Portal</button>
-        <center><a href="admin.html" class="admin-link">Admin Access</a></center>
-    </div>
 </body>
 </html>
