@@ -5,6 +5,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(express.static(__dirname)); // Serve HTML files
 
 // Fetch the current access key
 app.get("/get-key", (req, res) => {
