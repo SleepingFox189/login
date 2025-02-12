@@ -60,14 +60,13 @@
 
         .container {
             position: relative;
-            max-width: 500px;
+            max-width: 1200px;
             margin: 100px auto;
             padding: 40px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
             animation: float 6s ease-in-out infinite;
         }
 
@@ -184,31 +183,6 @@
         .back-link:hover::after {
             transform: scaleX(1);
         }
-
-        /* Stars animation */
-        .stars {
-            position: fixed;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
-            animation: animStar 50s linear infinite;
-        }
-        .stars::after {
-            content: " ";
-            position: absolute;
-            top: 2000px;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
-        }
-
-        @keyframes animStar {
-            from { transform: translateY(0px); }
-            to { transform: translateY(-2000px); }
-        }
-
     </style>
 </head>
 <body>
@@ -221,74 +195,123 @@
         <h1>Admin Dashboard</h1>
 
         <h2>Generate New Access Key</h2>
-        <button onclick="generateKey()">Generate Key</button>
-        <p id="newKeyDisplay" class="key-display"></p>
+        <button onclick="generateNewKey()">Generate Key</button>
+        <p id="newKeyDisplay" class="key-display">Loading...</p>
 
         <h2>Pending Users</h2>
-        <ul id="pendingUsers"></ul>
+        <div id="pendingUsers" class="user-list">
+            <!-- Pending users will be populated here -->
+        </div>
 
         <h2>Approved Users</h2>
-        <ul id="approvedUsers"></ul>
+        <div id="approvedUsers" class="user-list">
+            <!-- Approved users will be populated here -->
+        </div>
 
         <script>
-            function generateKey() {
-                fetch("/set-key", { method: "POST" })
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById("newKeyDisplay").innerText = "New Key: " + data.accessKey;
-                        document.getElementById("newKeyDisplay").style.display = "block";
-                    })
-                    .catch(error => console.error("Error generating key:", error));
+            const ADMIN_CREDENTIALS = {
+                username: 'cavan',
+                password: 'cavanstoolsontop'
+            };
+
+            // Admin login
+            function adminLogin() {
+                const username = document.getElementById('adminUsername').value;
+                const password = document.getElementById('adminPassword').value;
+
+                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    document.getElementById('adminLogin').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'block';
+                    loadUsers();
+                } else {
+                    showMessage('Invalid admin credentials', true);
+                }
             }
 
-            function fetchUsers() {
-                fetch("/get-users")
-                    .then(response => response.json())
-                    .then(data => {
-                        const pendingUsersList = document.getElementById("pendingUsers");
-                        const approvedUsersList = document.getElementById("approvedUsers");
+            function showMessage(message, isError = false) {
+                const statusDiv = document.getElementById('statusMessage');
+                statusDiv.textContent = message;
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = isError ? 'rgba(255, 68, 68, 0.8)' : 'rgba(76, 175, 80, 0.8)';
 
-                        pendingUsersList.innerHTML = "";
-                        approvedUsersList.innerHTML = "";
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
 
-                        data.pendingUsers.forEach(user => {
-                            const li = document.createElement("li");
-                            li.innerHTML = `${user.username} <button onclick="approveUser('${user.username}')">Approve</button>`;
-                            pendingUsersList.appendChild(li);
-                        });
+            function loadUsers() {
+                const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                const pendingContainer = document.getElementById('pendingUsers');
+                pendingContainer.innerHTML = pendingUsers.length ? '' : '<p>No pending requests</p>';
 
-                        data.approvedUsers.forEach(user => {
-                            const li = document.createElement("li");
-                            li.innerHTML = `${user.username} <button onclick="deleteUser('${user.username}')">Delete</button>`;
-                            approvedUsersList.appendChild(li);
-                        });
-                    })
-                    .catch(error => console.error("Error fetching users:", error));
+                pendingUsers.forEach(user => {
+                    const userCard = createUserCard(user, true);
+                    pendingContainer.appendChild(userCard);
+                });
+
+                const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+                const approvedContainer = document.getElementById('approvedUsers');
+                approvedContainer.innerHTML = approvedUsers.length ? '' : '<p>No approved users</p>';
+
+                approvedUsers.forEach(user => {
+                    const userCard = createUserCard(user, false);
+                    approvedContainer.appendChild(userCard);
+                });
+            }
+
+            function createUserCard(user, isPending) {
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                card.innerHTML = `
+                    <h3>${user.username}</h3>
+                    <p>Status: ${isPending ? 'Pending' : 'Approved'}</p>
+                    ${isPending ? `
+                        <button onclick="approveUser('${user.username}')">Approve</button>
+                        <button onclick="rejectUser('${user.username}')">Reject</button>
+                    ` : ''}
+                    <button onclick="deleteUser('${user.username}')">Delete</button>
+                `;
+                return card;
             }
 
             function approveUser(username) {
-                fetch("/approve-user", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username })
-                })
-                .then(response => response.json())
-                .then(() => fetchUsers())
-                .catch(error => console.error("Error approving user:", error));
+                const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+                const userIndex = pendingUsers.findIndex(user => user.username === username);
+
+                if (userIndex !== -1) {
+                    const [user] = pendingUsers.splice(userIndex, 1);
+                    approvedUsers.push(user);
+                    localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                    localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
+                    loadUsers();
+                }
+            }
+
+            function rejectUser(username) {
+                const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                const userIndex = pendingUsers.findIndex(user => user.username === username);
+
+                if (userIndex !== -1) {
+                    pendingUsers.splice(userIndex, 1);
+                    localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                    loadUsers();
+                }
             }
 
             function deleteUser(username) {
-                fetch("/delete-user", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username })
-                })
-                .then(response => response.json())
-                .then(() => fetchUsers())
-                .catch(error => console.error("Error deleting user:", error));
+                let allUsers = [...JSON.parse(localStorage.getItem('pendingUsers') || '[]'), ...JSON.parse(localStorage.getItem('approvedUsers') || '[]')];
+                allUsers = allUsers.filter(user => user.username !== username);
+                localStorage.setItem('pendingUsers', JSON.stringify(allUsers.filter(user => !user.approved)));
+                localStorage.setItem('approvedUsers', JSON.stringify(allUsers.filter(user => user.approved)));
+                loadUsers();
             }
 
-            fetchUsers();
+            function generateNewKey() {
+                const newKey = 'KEY-' + Math.random().toString(36).substring(2, 15);
+                document.getElementById('newKeyDisplay').textContent = `New Access Key: ${newKey}`;
+                document.getElementById('newKeyDisplay').style.display = 'block';
+            }
         </script>
     </div>
 </body>
