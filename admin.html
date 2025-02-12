@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cavans Tools Access</title>
+    <title>Admin Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -20,40 +20,53 @@
             position: relative;
         }
 
-        .stars {
+        .space-background {
             position: fixed;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF, 134px 1321px #FFF, 92px 859px #FFF;
-            animation: animStar 50s linear infinite;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
-        .stars::after {
-            content: " ";
+        @keyframes movePlanets {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .planet {
             position: absolute;
-            top: 2000px;
-            width: 1px;
-            height: 1px;
-            background: transparent;
-            box-shadow: 1744px 122px #FFF, 134px 1321px #FFF, 92px 859px #FFF;
+            border-radius: 50%;
+            animation: movePlanets linear infinite;
         }
 
-        @keyframes animStar {
-            from { transform: translateY(0px); }
-            to { transform: translateY(-2000px); }
+        .planet1 {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, #7aa7ff, #1a1a3c);
+            top: 10%;
+            left: 10%;
+            animation-duration: 20s;
+        }
+
+        .planet2 {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, #ff7a7a, #3c1a1a);
+            bottom: 10%;
+            right: 10%;
+            animation-duration: 25s;
         }
 
         .container {
             position: relative;
-            max-width: 400px;
+            max-width: 1200px;
             margin: 100px auto;
             padding: 40px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
             animation: float 6s ease-in-out infinite;
         }
 
@@ -62,7 +75,7 @@
             50% { transform: translateY(-20px); }
         }
 
-        h2 {
+        h1, h2 {
             text-align: center;
             margin-bottom: 30px;
             font-size: 2.5em;
@@ -70,27 +83,6 @@
             background: linear-gradient(45deg, #fff, #7aa7ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .tab-container {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
         }
 
         .input-group {
@@ -115,11 +107,7 @@
             box-shadow: 0 0 20px rgba(122, 167, 255, 0.3);
         }
 
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .submit-btn {
+        button {
             width: 100%;
             padding: 15px;
             background: linear-gradient(45deg, #7aa7ff, #5f86ff);
@@ -133,137 +121,198 @@
             letter-spacing: 2px;
         }
 
-        .submit-btn:hover {
+        button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(122, 167, 255, 0.4);
         }
 
-        .status-message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .status-message.show {
-            opacity: 1;
+        .key-display {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease;
         }
 
-        .success {
-            background: rgba(76, 175, 80, 0.3);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .error {
-            background: rgba(255, 68, 68, 0.3);
-        }
-
-        .invalid {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-            transform: translate3d(0, 0, 0);
+            color: #ff4444;
+            margin-top: 10px;
+            display: none;
+            animation: shake 0.5s ease;
         }
 
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #fff;
+            text-decoration: none;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .back-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, transparent, #7aa7ff, transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover::after {
+            transform: scaleX(1);
         }
     </style>
 </head>
 <body>
     <div class="stars"></div>
-    <div class="container">
-        <h2>Cavans Tools Access</h2>
-
-        <!-- Tab Container -->
-        <div class="tab-container">
-            <div class="tab active" onclick="switchTab('key')">Enter Access Key</div>
-        </div>
-
-        <!-- Access Key Tab -->
-        <div id="key-tab" class="tab-content active">
-            <div class="input-group">
-                <input type="text" id="accessKey" placeholder="Enter Access Key">
-            </div>
-            <button class="submit-btn" onclick="checkKey()">Enter Portal</button>
-        </div>
-
-        <!-- Status Message -->
-        <div id="status-message" class="status-message"></div>
-
-        <!-- Admin Link -->
-        <center><a href="admin.html" class="admin-link">Admin Access</a></center>
+    <div class="space-background">
+        <div class="planet planet1"></div>
+        <div class="planet planet2"></div>
     </div>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
 
-    <script>
-        // Switch Tab Functionality
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        <h2>Generate New Access Key</h2>
+        <button onclick="generateNewKey()">Generate Key</button>
+        <p id="newKeyDisplay" class="key-display">Loading...</p>
 
-            if (tabName === 'key') {
-                document.querySelector('.tab:first-child').classList.add('active');
-                document.getElementById('key-tab').classList.add('active');
-            }
-        }
+        <h2>Pending Users</h2>
+        <div id="pendingUsers" class="user-list">
+            <!-- Pending users will be populated here -->
+        </div>
 
-        // Show Status Message
-        function showMessage(message, isError = false) {
-            const statusDiv = document.getElementById('status-message');
-            statusDiv.textContent = message;
-            statusDiv.className = 'status-message ' + (isError ? 'error' : 'success') + ' show';
-            setTimeout(() => {
-                statusDiv.className = 'status-message';
-            }, 3000);
-        }
+        <h2>Approved Users</h2>
+        <div id="approvedUsers" class="user-list">
+            <!-- Approved users will be populated here -->
+        </div>
 
-        // Check Access Key
-        async function checkKey() {
-            const input = document.getElementById('accessKey');
-            const key = input.value.trim();
-            const correctKey = await getServerKey();
+        <script>
+            const ADMIN_CREDENTIALS = {
+                username: 'cavan',
+                password: 'cavanstoolsontop'
+            };
 
-            if (!correctKey) {
-                alert('Failed to retrieve access key from the server.');
-                return;
-            }
+            // Admin login
+            function adminLogin() {
+                const username = document.getElementById('adminUsername').value;
+                const password = document.getElementById('adminPassword').value;
 
-            if (key === correctKey) {
-                input.style.borderColor = '#4CAF50';
-                const win = window.open('about:blank', '_blank');
-                if (win) {
-                    win.document.write('<iframe src="https://cavansproxy.vercel.app/" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>');
+                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    document.getElementById('adminLogin').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'block';
+                    loadUsers();
+                } else {
+                    showMessage('Invalid admin credentials', true);
                 }
-            } else {
-                input.classList.add('invalid');
+            }
+
+            function showMessage(message, isError = false) {
+                const statusDiv = document.getElementById('statusMessage');
+                statusDiv.textContent = message;
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = isError ? 'rgba(255, 68, 68, 0.8)' : 'rgba(76, 175, 80, 0.8)';
+
                 setTimeout(() => {
-                    input.classList.remove('invalid');
-                }, 500);
+                    statusDiv.style.display = 'none';
+                }, 3000);
             }
-        }
 
-        // Fetch server key
-        async function getServerKey() {
-            try {
-                const response = await fetch('/get-key');
-                const data = await response.json();
-                return data.accessKey;
-            } catch (error) {
-                console.error('Error fetching key:', error);
-                return null;
+            function loadUsers() {
+                const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                const pendingContainer = document.getElementById('pendingUsers');
+                pendingContainer.innerHTML = pendingUsers.length ? '' : '<p>No pending requests</p>';
+
+                pendingUsers.forEach(user => {
+                    const userCard = createUserCard(user, true);
+                    pendingContainer.appendChild(userCard);
+                });
+
+                const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+                const approvedContainer = document.getElementById('approvedUsers');
+                approvedContainer.innerHTML = approvedUsers.length ? '' : '<p>No approved users</p>';
+
+                approvedUsers.forEach(user => {
+                    const userCard = createUserCard(user, false);
+                    approvedContainer.appendChild(userCard);
+                });
             }
-        }
 
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('accessKey').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    checkKey();
+            function createUserCard(user, isPending) {
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                card.innerHTML = `
+                    <h3>${user.username}</h3>
+                    <p>Status: ${isPending ? 'Pending' : 'Approved'}</p>
+                    ${isPending ? `
+                        <button onclick="approveUser('${user.username}')">Approve</button>
+                        <button onclick="rejectUser('${user.username}')">Reject</button>
+                    ` : ''}
+                    <button onclick="deleteUser('${user.username}')">Delete</button>
+                `;
+                return card;
+            }
+
+            function approveUser(username) {
+                const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                const approvedUsers = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+                const userIndex = pendingUsers.findIndex(user => user.username === username);
+
+                if (userIndex !== -1) {
+                    const [user] = pendingUsers.splice(userIndex, 1);
+                    approvedUsers.push(user);
+                    localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                    localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
+                    loadUsers();
                 }
-            });
-        });
-    </script>
+            }
+
+            function rejectUser(username) {
+                const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                const userIndex = pendingUsers.findIndex(user => user.username === username);
+
+                if (userIndex !== -1) {
+                    pendingUsers.splice(userIndex, 1);
+                    localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                    loadUsers();
+                }
+            }
+
+            function deleteUser(username) {
+                let allUsers = [...JSON.parse(localStorage.getItem('pendingUsers') || '[]'), ...JSON.parse(localStorage.getItem('approvedUsers') || '[]')];
+                allUsers = allUsers.filter(user => user.username !== username);
+                localStorage.setItem('pendingUsers', JSON.stringify(allUsers.filter(user => !user.approved)));
+                localStorage.setItem('approvedUsers', JSON.stringify(allUsers.filter(user => user.approved)));
+                loadUsers();
+            }
+
+            function generateNewKey() {
+                const newKey = 'KEY-' + Math.random().toString(36).substring(2, 15);
+                document.getElementById('newKeyDisplay').textContent = `New Access Key: ${newKey}`;
+                document.getElementById('newKeyDisplay').style.display = 'block';
+            }
+        </script>
+    </div>
 </body>
 </html>
